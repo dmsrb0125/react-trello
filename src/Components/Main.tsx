@@ -1,0 +1,107 @@
+import React, { useEffect, useState } from "react";
+import axiosInstance from "../axiosConfig";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+`;
+
+const Title = styled.h2`
+  font-size: 24px;
+  margin-bottom: 10px;
+`;
+
+const Divider = styled.hr`
+  width: 100%;
+  border: 1px solid #ccc;
+  margin: 20px 0;
+`;
+
+const BoardList = styled.ul`
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const BoardItem = styled.li`
+  padding: 20px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 300px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const BoardName = styled.h3`
+  font-size: 20px;
+  margin: 0 0 10px 0;
+`;
+
+const BoardDescription = styled.p`
+  margin: 0;
+  color: gray;
+`;
+
+const Button = styled.button`
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+`;
+
+const Main = () => {
+  const [boards, setBoards] = useState<any[]>([]);
+
+  const fetchBoards = async () => {
+    try {
+      const response = await axiosInstance.get("/boards");
+      console.log("Boards fetched:", response.data);
+      setBoards(Array.isArray(response.data.data) ? response.data.data : []);
+    } catch (error) {
+      console.error("Failed to fetch boards:", error);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Token in localStorage:", token); // 로컬스토리지의 토큰 확인
+    if (token) {
+      fetchBoards();
+    }
+  }, []);
+
+  const handleBoardCreate = () => {
+    console.log("Create board button clicked.");
+  };
+
+  return (
+    <Wrapper>
+      <Title>Your Boards</Title>
+      <Divider />
+      <BoardList>
+        {boards.map((board) => (
+          <BoardItem key={board.boardName}>
+            <BoardName>{board.boardName}</BoardName>
+            {board.boardDescription && (
+              <BoardDescription>{board.boardDescription}</BoardDescription>
+            )}
+          </BoardItem>
+        ))}
+      </BoardList>
+      <Divider />
+      <Button onClick={handleBoardCreate}>Create Board</Button>
+    </Wrapper>
+  );
+};
+
+export default Main;

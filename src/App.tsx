@@ -1,26 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+import Main from "./Components/Main";
+import BoardCreate from "./Components/BoardCreate";
+import Login from "./Components/Login";
+import BoardWrapper from "./Components/BoardWrapper";
+import { AuthProvider, useAuth } from "./AuthContext";
+import { Provider } from "react-redux";
+import store from "./store";
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <Routes>
+                    <Route path="/" element={<Main />} />
+                    <Route path="/board-create" element={<BoardCreate />} />
+                    <Route path="/board/:boardId" element={<BoardWrapper />} />
+                  </Routes>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </Provider>
   );
-}
+};
+
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
 
 export default App;
