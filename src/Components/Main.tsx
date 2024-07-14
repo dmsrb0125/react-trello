@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../axiosConfig";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
+  background-color: skyblue;
 `;
 
 const Title = styled.h2`
-  font-size: 24px;
+  font-size: 40px;
   margin-bottom: 10px;
 `;
 
@@ -30,16 +32,18 @@ const BoardList = styled.ul`
 `;
 
 const BoardItem = styled.li`
+  height: 100px;
   padding: 20px;
   margin: 10px 0;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 10px;
   width: 300px;
   text-align: center;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background-color: white;
 `;
 
 const BoardName = styled.h3`
@@ -61,6 +65,7 @@ const Button = styled.button`
 
 const Main = () => {
   const [boards, setBoards] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const fetchBoards = async () => {
     try {
@@ -73,15 +78,11 @@ const Main = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("Token in localStorage:", token); // 로컬스토리지의 토큰 확인
-    if (token) {
-      fetchBoards();
-    }
+    fetchBoards();
   }, []);
 
   const handleBoardCreate = () => {
-    console.log("Create board button clicked.");
+    navigate("/board-create");
   };
 
   return (
