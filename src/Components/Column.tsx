@@ -1,9 +1,9 @@
 import React from "react";
-import { useDrop, useDrag } from "react-dnd";
 import styled from "styled-components";
 import DraggableCard from "./DraggableCard";
 import AddCardForm from "./AddCardForm";
 import { ITodo } from "../types";
+import { Droppable, Draggable } from "react-beautiful-dnd";
 
 interface WrapperProps {
   $isDraggingOver: boolean;
@@ -28,7 +28,8 @@ interface IColumnProps {
   columnName: string;
   toDos: ITodo[];
   boardId: number;
-  index: number; // 추가
+  index: number;
+  moveColumn: (dragIndex: number, hoverIndex: number) => void;
 }
 
 const Column = ({
@@ -37,38 +38,35 @@ const Column = ({
   toDos = [],
   boardId,
   index,
+  moveColumn,
 }: IColumnProps) => {
-  const [{ isOver }, drop] = useDrop({
-    accept: "CARD",
-    drop: () => ({ columnId }),
-    collect: (monitor: any) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
-
-  const [{ isDragging }, drag] = useDrag({
-    type: "COLUMN",
-    item: { index },
-    collect: (monitor: any) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
   return (
-    <Wrapper ref={drop} $isDraggingOver={isOver}>
-      <div ref={drag}>
-        <Title>{columnName}</Title>
-      </div>
-      <AddCardForm boardId={boardId} columnId={columnId} />
-      {toDos.map((toDo, index) => (
-        <DraggableCard
-          key={toDo.id}
-          toDoId={toDo.id}
-          toDoText={toDo.text}
-          index={index}
-        />
-      ))}
-    </Wrapper>
+    <Draggable draggableId={`column-${columnId}`} index={index}>
+      {(provided) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        >
+          <Droppable droppableId={`column-${columnId}`} type="CARD">
+            {(provided, snapshot) => (
+              <Wrapper
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                $isDraggingOver={snapshot.isDraggingOver}
+              >
+                <Title>{columnName}</Title>
+                <AddCardForm boardId={boardId} columnId={columnId} />
+                {toDos.map((toDo, index) => (
+                  <DraggableCard key={toDo.id} toDo={toDo} index={index} />
+                ))}
+                {provided.placeholder}
+              </Wrapper>
+            )}
+          </Droppable>
+        </div>
+      )}
+    </Draggable>
   );
 };
 

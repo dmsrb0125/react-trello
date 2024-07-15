@@ -7,7 +7,7 @@ interface ICardProps {
   index: number;
 }
 
-const DraggableCard: React.FC<ICardProps> = ({ toDo, index }) => {
+const Card: React.FC<ICardProps> = ({ toDo, index }) => {
   return (
     <Draggable draggableId={`task-${toDo.id}`} index={index}>
       {(provided, snapshot) => (
@@ -32,4 +32,4 @@ const DraggableCard: React.FC<ICardProps> = ({ toDo, index }) => {
   );
 };
 
-export default DraggableCard;
+export default Card;

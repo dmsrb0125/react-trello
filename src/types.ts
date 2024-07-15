@@ -1,12 +1,18 @@
-// src/types.ts
-export interface ITodo {
+// types.ts
+export interface TaskColumnDto {
   id: number;
-  text: string;
-  columnId: number;
+  columnName: string;
 }
 
-export interface IToDoState {
-  [key: number]: ITodo[];
+export interface ITodo {
+  id: number;
+  cardName: string;
+  cardDescription: string | null;
+  dueDate: string | null;
+  cardOrder: number;
+  taskColumn: TaskColumnDto;
+  checklist: any[];
+  commentList: any[];
 }
 
 export interface TaskColumnResponseDto {
