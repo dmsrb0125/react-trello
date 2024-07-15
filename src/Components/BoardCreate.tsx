@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axiosInstance from "../axiosConfig";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
   display: flex;
@@ -35,6 +36,7 @@ const Button = styled.button`
 const BoardCreate: React.FC = () => {
   const [boardName, setBoardName] = useState("");
   const [boardDescription, setBoardDescription] = useState("");
+  const navigate = useNavigate();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBoardName(e.target.value);
@@ -52,6 +54,7 @@ const BoardCreate: React.FC = () => {
         boardDescription,
       });
       console.log("Board created:", response.data);
+      navigate("/"); // 보드 생성 후 메인 페이지로 리다이렉트
     } catch (error) {
       console.error("Failed to create board:", error);
     }
