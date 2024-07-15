@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axiosInstance from "./axiosConfig"; // Axios 인스턴스를 불러옵니다.
+import axiosInstance from "./axiosConfig";
 
 interface AuthContextType {
   isAuthenticated: boolean;

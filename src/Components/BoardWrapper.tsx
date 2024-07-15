@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   useParams,
   Navigate,
@@ -12,7 +14,6 @@ import { TaskColumnResponseDto, ITodo } from "../types";
 import axiosInstance from "../axiosConfig";
 import { useToDoContext } from "../ToDoContext";
 import { useAuth } from "../AuthContext";
-import { Droppable, DropResult } from "react-beautiful-dnd";
 
 const Wrapper = styled.div`
   display: flex;
@@ -113,9 +114,12 @@ const BoardWrapper: React.FC = () => {
         setColumns(validColumns);
 
         const initialToDos: { [key: number]: ITodo[] } = {};
-        validColumns.forEach((column) => {
-          initialToDos[column.id] = [];
-        });
+        for (const column of validColumns) {
+          const cardsResponse = await axiosInstance.get(
+            `/columns/${column.id}/cards`
+          );
+          initialToDos[column.id] = cardsResponse.data.data;
+        }
         setToDos(initialToDos);
       } catch (error) {
         console.error("Failed to fetch board data:", error);
@@ -134,13 +138,6 @@ const BoardWrapper: React.FC = () => {
     setColumns(updatedColumns);
   };
 
-  const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
-    if (!destination) return;
-
-    moveColumn(source.index, destination.index);
-  };
-
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
@@ -150,35 +147,32 @@ const BoardWrapper: React.FC = () => {
   }
 
   return (
-    <Wrapper>
-      <Header>
-        <div>
-          <Title>{boardName}</Title>
-          <Description>{boardDescription}</Description>
-        </div>
-        <Button onClick={() => navigate("/")}>Main Page</Button>
-      </Header>
-      <Divider />
-      <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
-        {(provided) => (
-          <Columns ref={provided.innerRef} {...provided.droppableProps}>
-            {columns.map((column, index) => (
-              <Column
-                key={column.id}
-                boardId={Number(boardId)}
-                columnId={column.id}
-                columnName={column.columnName}
-                toDos={toDos[column.id] || []}
-                index={index}
-                moveColumn={moveColumn}
-              />
-            ))}
-            {provided.placeholder}
-          </Columns>
-        )}
-      </Droppable>
-      <AddColumnButton boardId={Number(boardId)} setColumns={setColumns} />
-    </Wrapper>
+    <DndProvider backend={HTML5Backend}>
+      <Wrapper>
+        <Header>
+          <div>
+            <Title>{boardName}</Title>
+            <Description>{boardDescription}</Description>
+          </div>
+          <Button onClick={() => navigate("/")}>Main Page</Button>
+        </Header>
+        <Divider />
+        <Columns>
+          {columns.map((column, index) => (
+            <Column
+              key={column.id}
+              boardId={Number(boardId)}
+              columnId={column.id}
+              columnName={column.columnName}
+              toDos={toDos[column.id] || []}
+              index={index}
+              moveColumn={moveColumn}
+            />
+          ))}
+        </Columns>
+        <AddColumnButton boardId={Number(boardId)} setColumns={setColumns} />
+      </Wrapper>
+    </DndProvider>
   );
 };
 
