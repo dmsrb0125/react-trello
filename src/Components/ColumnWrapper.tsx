@@ -1,17 +1,18 @@
+// src/Components/ColumnWrapper.tsx
 import React from "react";
 import { useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import Column from "./Column";
-import { toDoState, ITodo } from "../atoms";
-import { TaskColumnResponseDto } from "../types"; // TaskColumnResponseDto 타입을 추가합니다.
+import { toDoState, IToDoState, ITodo } from "../atoms"; // ITodo 가져오기
 
-interface IToDoState {
-  [key: string]: ITodo[];
+interface IColumnProps {
+  columnId: number;
+  columnName: string;
+  toDos: ITodo[];
+  boardId: string;
 }
 
-const ColumnWrapper: React.FC<{ columns: TaskColumnResponseDto[] }> = ({
-  columns,
-}) => {
+const ColumnWrapper: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
   const toDos = useRecoilValue<IToDoState>(toDoState);
 
@@ -21,13 +22,13 @@ const ColumnWrapper: React.FC<{ columns: TaskColumnResponseDto[] }> = ({
 
   return (
     <div>
-      {columns.map((column) => (
+      {Object.keys(toDos).map((columnId) => (
         <Column
-          key={column.columnId}
-          boardId={boardId}
-          columnId={column.columnId}
-          columnName={column.columnName}
-          toDos={toDos[column.columnId]}
+          key={columnId}
+          boardId={Number(boardId)}
+          columnId={Number(columnId)}
+          columnName={toDos[Number(columnId)][0].columnName} // columnName을 얻는 부분 수정
+          toDos={toDos[Number(columnId)]}
         />
       ))}
     </div>

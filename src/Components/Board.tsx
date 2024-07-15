@@ -2,13 +2,11 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
-import { toDoState, ITodo } from "../atoms";
-import Column from "./Column";
 import { useParams } from "react-router-dom";
-
-interface IToDoState {
-  [key: string]: ITodo[];
-}
+import { toDoState, IToDoState } from "../atoms";
+import Column from "./Column";
+import { TaskColumnResponseDto } from "../types";
+import axiosInstance from "../axiosConfig";
 
 const Wrapper = styled.div`
   display: flex;
@@ -27,28 +25,46 @@ const Columns = styled.div`
 const Board: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
   const [toDos, setToDos] = useRecoilState<IToDoState>(toDoState);
+  const [columns, setColumns] = useState<TaskColumnResponseDto[]>([]);
+
+  useEffect(() => {
+    const fetchColumns = async () => {
+      try {
+        const response = await axiosInstance.get(`/boards/${boardId}/columns`);
+        setColumns(response.data.data);
+      } catch (error) {
+        console.error("Failed to fetch columns:", error);
+      }
+    };
+
+    fetchColumns();
+  }, [boardId]);
 
   const onDragEnd = (info: DropResult) => {
     const { destination, source } = info;
     if (!destination) return;
 
     setToDos((allBoards) => {
-      const sourceBoard = [...allBoards[source.droppableId]];
-      const destinationBoard = [...allBoards[destination.droppableId]];
+      const sourceBoard = [
+        ...allBoards[source.droppableId as unknown as number],
+      ];
+      const destinationBoard = [
+        ...allBoards[destination.droppableId as unknown as number],
+      ];
       const [movedTask] = sourceBoard.splice(source.index, 1);
 
       if (destination.droppableId === source.droppableId) {
         sourceBoard.splice(destination.index, 0, movedTask);
         return {
           ...allBoards,
-          [source.droppableId]: sourceBoard,
+          [source.droppableId as unknown as number]: sourceBoard,
         };
       } else {
         destinationBoard.splice(destination.index, 0, movedTask);
         return {
           ...allBoards,
-          [source.droppableId]: sourceBoard,
-          [destination.droppableId]: destinationBoard,
+          [source.droppableId as unknown as number]: sourceBoard,
+          [destination.droppableId as unknown as number]: destinationBoard,
         };
       }
     });
@@ -58,13 +74,6 @@ const Board: React.FC = () => {
     return <div>Board not found</div>;
   }
 
-  // 컬럼 데이터는 실제 API 호출을 통해 받아온 데이터로 대체
-  const columns = [
-    { id: "1", name: "To Do" },
-    { id: "2", name: "Doing" },
-    { id: "3", name: "Done" },
-  ];
-
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Wrapper>
@@ -73,10 +82,10 @@ const Board: React.FC = () => {
           {columns.map((column) => (
             <Column
               key={column.id}
-              boardId={boardId}
+              boardId={parseInt(boardId, 10)}
               columnId={column.id}
-              columnName={column.name} // columnName 속성을 추가
-              toDos={toDos[column.name] || []}
+              columnName={column.columnName}
+              toDos={toDos[column.id] || []}
             />
           ))}
         </Columns>
