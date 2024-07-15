@@ -2,17 +2,32 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import Column from "./Column";
-import { toDoState } from "../atoms";
+import { toDoState, ITodo } from "../atoms";
+
+interface IToDoState {
+  [key: string]: ITodo[];
+}
 
 const ColumnWrapper: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
-  const toDos = useRecoilValue(toDoState);
+  const toDos = useRecoilValue<IToDoState>(toDoState);
 
-  if (!boardId || !toDos[boardId]) {
+  if (!boardId || !toDos) {
     return <div>Board not found</div>;
   }
 
-  return <Column boardId={boardId} toDos={toDos[boardId]} />;
+  return (
+    <div>
+      {["To Do", "Doing", "Done"].map((columnId) => (
+        <Column
+          key={columnId}
+          boardId={boardId}
+          columnId={columnId}
+          toDos={toDos[columnId]}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default ColumnWrapper;

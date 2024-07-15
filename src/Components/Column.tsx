@@ -1,52 +1,15 @@
 import React from "react";
 import { Droppable } from "react-beautiful-dnd";
-import { useForm } from "react-hook-form";
 import styled from "styled-components";
-import DragabbleCard from "./DragabbleCard";
-import { ITodo, toDoState } from "../atoms";
-import { useSetRecoilState } from "recoil";
+import DraggableCard from "./DragabbleCard";
+import { ITodo } from "../atoms";
 
-interface IAreaProps {
-  isDraggingFromThis: boolean;
-  isDraggingOver: boolean;
-}
-
-interface IForm {
-  toDo: string;
-}
-
-interface IBoardProps {
-  toDos: ITodo[];
-  boardId: string;
-}
-
-const Form = styled.form`
-  width: 100%;
-  input {
-    width: 100%;
-  }
-`;
-
-const Area = styled.div.withConfig({
-  shouldForwardProp: (prop) =>
-    !["isDraggingOver", "isDraggingFromThis"].includes(prop),
-})<IAreaProps>`
-  background-color: ${(props) =>
-    props.isDraggingOver
-      ? "#dfe6e9"
-      : props.isDraggingFromThis
-      ? "#b2bec3"
-      : "transparent"};
-  flex-grow: 1;
-  transition: background-color 0.3s ease-in-out;
-  padding: 20px;
-`;
-
-const Wrapper = styled.div`
-  padding: 20px 10px;
+const ColumnWrapper = styled.div`
   background-color: ${(props) => props.theme.boardColor};
-  border-radius: 5px;
-  min-height: 300px;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 300px; /* Adjusted width */
+  max-width: 300px; /* Adjusted width */
   display: flex;
   flex-direction: column;
 `;
@@ -58,55 +21,76 @@ const Title = styled.h2`
   font-size: 18px;
 `;
 
-const Column: React.FC<IBoardProps> = ({ toDos, boardId }) => {
-  const { register, setValue, handleSubmit } = useForm<IForm>();
-  const setToDos = useSetRecoilState(toDoState);
+const Form = styled.form`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+`;
 
-  const onValid = ({ toDo }: IForm) => {
-    const newToDo = {
-      id: Date.now(),
-      text: toDo,
-    };
-    setToDos((allBoards) => {
-      return {
-        ...allBoards,
-        [boardId]: [newToDo, ...allBoards[boardId]],
-      };
-    });
-    setValue("toDo", "");
-  };
+const Input = styled.input`
+  width: 80%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+`;
 
+interface TaskListProps {
+  isDraggingOver: boolean;
+  isDraggingFromThis: boolean;
+}
+
+const TaskList = styled.div<TaskListProps>`
+  background-color: ${(props) =>
+    props.isDraggingOver
+      ? "#dfe6e9"
+      : props.isDraggingFromThis
+      ? "#b2bec3"
+      : "transparent"};
+  flex-grow: 1;
+  transition: background-color 0.3s ease-in-out;
+  padding: 20px;
+  border-radius: 5px;
+`;
+
+interface IColumnProps {
+  boardId: string;
+  columnId: string;
+  toDos: ITodo[];
+}
+
+const Column: React.FC<IColumnProps> = ({ boardId, columnId, toDos }) => {
   return (
-    <Wrapper>
-      <Title>{boardId}</Title>
-      <Form onSubmit={handleSubmit(onValid)}>
-        <input
-          {...register("toDo", { required: true })}
-          type="text"
-          placeholder={`Add task on ${boardId}`}
-        />
-      </Form>
-      <Droppable droppableId={boardId}>
-        {(magic, info) => (
-          <Area
-            isDraggingOver={info.isDraggingOver}
-            isDraggingFromThis={Boolean(info.draggingFromThisWith)}
-            ref={magic.innerRef}
-            {...magic.droppableProps}
+    <Droppable droppableId={columnId}>
+      {(provided, snapshot) => (
+        <ColumnWrapper>
+          <Title>{columnId}</Title>
+          <Form>
+            <Input
+              name="toDo"
+              type="text"
+              placeholder={`Add task on ${columnId}`}
+            />
+          </Form>
+          <TaskList
+            ref={provided.innerRef}
+            isDraggingOver={snapshot.isDraggingOver}
+            isDraggingFromThis={Boolean(snapshot.draggingFromThisWith)}
+            {...provided.droppableProps}
           >
             {toDos.map((toDo, index) => (
-              <DragabbleCard
+              <DraggableCard
                 key={toDo.id}
                 index={index}
                 toDoId={toDo.id}
                 toDoText={toDo.text}
               />
             ))}
-            {magic.placeholder}
-          </Area>
-        )}
-      </Droppable>
-    </Wrapper>
+            {provided.placeholder}
+          </TaskList>
+        </ColumnWrapper>
+      )}
+    </Droppable>
   );
 };
 

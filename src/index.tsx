@@ -1,11 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RecoilRoot } from "recoil";
-import { createGlobalStyle } from "styled-components";
+import { createGlobalStyle, ThemeProvider } from "styled-components";
 import App from "./App";
 import { theme } from "./theme";
-import { ThemeProvider } from "styled-components";
 import { HelmetProvider, Helmet } from "react-helmet-async";
+import store from "./store";
+import { Provider } from "react-redux";
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
@@ -60,6 +61,19 @@ const GlobalStyle = createGlobalStyle`
   * {
     box-sizing: border-box;
   }
+
+  [data-rbd-drag-handle-context-id="0"] {
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    touch-action: manipulation;
+  }
+  [data-rbd-droppable-context-id="0"] {
+    overflow-anchor: none;
+  }
+  [data-rbd-dynamic="0"] {
+    cursor: -webkit-grab;
+    cursor: grab;
+  }
 `;
 
 const rootElement = document.getElementById("root");
@@ -67,19 +81,21 @@ const root = ReactDOM.createRoot(rootElement!);
 
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <RecoilRoot>
-        <HelmetProvider>
-          <Helmet>
-            <link
-              href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap"
-              rel="stylesheet"
-            />
-          </Helmet>
-          <GlobalStyle />
-          <App />
-        </HelmetProvider>
-      </RecoilRoot>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <RecoilRoot>
+          <HelmetProvider>
+            <Helmet>
+              <link
+                href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap"
+                rel="stylesheet"
+              />
+            </Helmet>
+            <GlobalStyle />
+            <App />
+          </HelmetProvider>
+        </RecoilRoot>
+      </ThemeProvider>
+    </Provider>
   </React.StrictMode>
 );

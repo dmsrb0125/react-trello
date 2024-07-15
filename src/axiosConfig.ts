@@ -40,7 +40,7 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem("token");
       setTimeout(() => {
         window.location.href = "/login"; // 로그인 페이지로 리디렉션
-      }, 1000); // 6초 후 리디렉션
+      }, 1000); 
     } else {
       console.error("Error response:", error.response);
     }

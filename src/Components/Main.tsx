@@ -85,13 +85,21 @@ const Main = () => {
     navigate("/board-create");
   };
 
+  const handleBoardClick = (boardId: number) => {
+    console.log(`Navigating to board with ID: ${boardId}`);
+    navigate(`/board/${boardId}`);
+  };
+
   return (
     <Wrapper>
       <Title>Your Boards</Title>
       <Divider />
       <BoardList>
         {boards.map((board) => (
-          <BoardItem key={board.boardName}>
+          <BoardItem
+            key={board.boardId}
+            onClick={() => handleBoardClick(board.boardId)}
+          >
             <BoardName>{board.boardName}</BoardName>
             {board.boardDescription && (
               <BoardDescription>{board.boardDescription}</BoardDescription>
