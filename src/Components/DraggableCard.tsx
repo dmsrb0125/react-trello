@@ -4,39 +4,35 @@ import styled from "styled-components";
 
 const Card = styled.div<{ isDragging: boolean }>`
   border-radius: 5px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   padding: 10px;
   background-color: ${(props) =>
     props.isDragging ? "#e4f2ff" : props.theme.cardColor};
   box-shadow: ${(props) =>
-    props.isDragging ? "0px 2px 5px rgba(0, 0, 0, 0.1)" : "none"};
+    props.isDragging ? "0px 2px 5px rgba(0, 0, 0, 0.05)" : "none"};
 `;
 
-interface IDraggableCardProps {
+interface IDragabbleCardProps {
   toDoId: number;
   toDoText: string;
   index: number;
 }
 
-const DraggableCard: React.FC<IDraggableCardProps> = ({
-  toDoId,
-  toDoText,
-  index,
-}) => {
+function DraggableCard({ toDoId, toDoText, index }: IDragabbleCardProps) {
   return (
-    <Draggable draggableId={toDoId.toString()} index={index}>
-      {(provided, snapshot) => (
+    <Draggable draggableId={toDoId + ""} index={index}>
+      {(magic, snapshot) => (
         <Card
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
           isDragging={snapshot.isDragging}
+          ref={magic.innerRef}
+          {...magic.dragHandleProps}
+          {...magic.draggableProps}
         >
           {toDoText}
         </Card>
       )}
     </Draggable>
   );
-};
+}
 
-export default DraggableCard;
+export default React.memo(DraggableCard);

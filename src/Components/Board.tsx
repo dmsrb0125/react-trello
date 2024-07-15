@@ -58,17 +58,25 @@ const Board: React.FC = () => {
     return <div>Board not found</div>;
   }
 
+  // 컬럼 데이터는 실제 API 호출을 통해 받아온 데이터로 대체
+  const columns = [
+    { id: "1", name: "To Do" },
+    { id: "2", name: "Doing" },
+    { id: "3", name: "Done" },
+  ];
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Wrapper>
         <h2>{boardId}</h2>
         <Columns>
-          {["To Do", "Doing", "Done"].map((columnId) => (
+          {columns.map((column) => (
             <Column
-              key={columnId}
+              key={column.id}
               boardId={boardId}
-              columnId={columnId}
-              toDos={toDos[columnId]}
+              columnId={column.id}
+              columnName={column.name} // columnName 속성을 추가
+              toDos={toDos[column.name] || []}
             />
           ))}
         </Columns>

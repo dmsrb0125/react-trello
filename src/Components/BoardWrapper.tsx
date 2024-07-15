@@ -1,40 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useRecoilState } from "recoil";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import styled from "styled-components";
 import axiosInstance from "../axiosConfig";
+import { useRecoilValue, useSetRecoilState } from "recoil"; // 변경된 부분
 import { toDoState } from "../atoms";
 import Column from "./Column";
+import AddColumnButton from "./AddColumnButton";
+import { TaskColumnResponseDto } from "../types";
 
-// 스타일드 컴포넌트 정의
 const BoardDetail = styled.div`
   padding: 20px;
-  background-color: #87ceeb; /* Sky blue background */
+  background-color: skyblue;
 `;
 
 const BoardTitle = styled.h2`
-  font-size: 36px; /* Larger font size */
-  text-align: center; /* Center align */
-  margin-bottom: 20px;
-  color: #333; /* Darker text color */
+  font-size: 36px;
+  text-align: center;
+  margin-bottom: 10px;
 `;
 
 const BoardDescription = styled.p`
-  font-size: 20px; /* Medium font size */
-  text-align: center; /* Center align */
-  margin-bottom: 30px;
-  color: #666; /* Gray text color */
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: gray;
 `;
 
-const ColumnContainer = styled.div`
+const Columns = styled.div`
   display: flex;
-  justify-content: space-between;
+  gap: 20px;
 `;
 
 const BoardWrapper: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
-  const [toDos, setToDos] = useRecoilState(toDoState);
+  const toDos = useRecoilValue(toDoState);
+  const setToDos = useSetRecoilState(toDoState);
+  const [columns, setColumns] = useState<TaskColumnResponseDto[]>([]);
   const [board, setBoard] = useState<any>(null);
 
   useEffect(() => {
@@ -53,24 +55,42 @@ const BoardWrapper: React.FC = () => {
       }
     };
 
+    const fetchColumns = async () => {
+      try {
+        const response = await axiosInstance.get(`/boards/${boardId}/columns`);
+        console.log("Columns data fetched:", response.data);
+        if (response.data && response.data.data) {
+          setColumns(response.data.data);
+        } else {
+          console.error("Unexpected response structure", response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch columns:", error);
+      }
+    };
+
     if (boardId) {
       fetchBoard();
+      fetchColumns();
     }
   }, [boardId]);
 
   const onDragEnd = (result: DropResult) => {
-    const { destination, source, draggableId } = result;
+    const { destination, source, draggableId, type } = result;
 
     if (!destination) return;
 
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
+    if (type === "COLUMN") {
+      const newColumnOrder = Array.from(columns);
+      const [movedColumn] = newColumnOrder.splice(source.index, 1);
+      newColumnOrder.splice(destination.index, 0, movedColumn);
+      setColumns(newColumnOrder);
+      // TODO: Add API call to save new column order
       return;
     }
 
-    setToDos((prev) => {
+    // Handle task dragging
+    setToDos((prev: any) => {
       const sourceBoard = [...prev[source.droppableId]];
       const destinationBoard = [...prev[destination.droppableId]];
       const [movedTask] = sourceBoard.splice(source.index, 1);
@@ -101,16 +121,18 @@ const BoardWrapper: React.FC = () => {
       <BoardDetail>
         <BoardTitle>{board.boardName}</BoardTitle>
         <BoardDescription>{board.boardDescription}</BoardDescription>
-        <ColumnContainer>
-          {["To Do", "Doing", "Done"].map((columnId) => (
+        <Columns>
+          {columns.map((column) => (
             <Column
-              key={columnId}
+              key={column.columnId}
               boardId={boardId}
-              columnId={columnId}
-              toDos={toDos[columnId] || []}
+              columnId={column.columnId}
+              columnName={column.columnName}
+              toDos={toDos[column.columnName] || []}
             />
           ))}
-        </ColumnContainer>
+        </Columns>
+        <AddColumnButton boardId={boardId} />
       </BoardDetail>
     </DragDropContext>
   );
