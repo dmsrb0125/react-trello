@@ -1,12 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { RecoilRoot } from "recoil";
 import { createGlobalStyle, ThemeProvider } from "styled-components";
 import App from "./App";
 import { theme } from "./theme";
 import { HelmetProvider, Helmet } from "react-helmet-async";
-import store from "./store";
-import { Provider } from "react-redux";
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
@@ -81,21 +78,17 @@ const root = ReactDOM.createRoot(rootElement!);
 
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <RecoilRoot>
-          <HelmetProvider>
-            <Helmet>
-              <link
-                href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap"
-                rel="stylesheet"
-              />
-            </Helmet>
-            <GlobalStyle />
-            <App />
-          </HelmetProvider>
-        </RecoilRoot>
-      </ThemeProvider>
-    </Provider>
+    <ThemeProvider theme={theme}>
+      <HelmetProvider>
+        <Helmet>
+          <link
+            href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap"
+            rel="stylesheet"
+          />
+        </Helmet>
+        <GlobalStyle />
+        <App />
+      </HelmetProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

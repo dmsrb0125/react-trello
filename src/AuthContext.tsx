@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axiosInstance from "./axiosConfig"; // Axios 인스턴스를 불러옵니다.
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: () => void;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -22,8 +23,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  const login = () => {
-    setIsAuthenticated(true);
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await axiosInstance.post("/users/login", {
+        username,
+        password,
+      });
+      const token = response.headers["authorization"];
+      if (token) {
+        localStorage.setItem("token", token);
+        setIsAuthenticated(true);
+      } else {
+        throw new Error("No token found in the response");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setIsAuthenticated(false);
+    }
   };
 
   const logout = () => {

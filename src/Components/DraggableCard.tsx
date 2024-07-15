@@ -1,5 +1,5 @@
 import React from "react";
-import { Draggable } from "react-beautiful-dnd";
+import { useDrag } from "react-dnd";
 import styled from "styled-components";
 
 const Card = styled.div<{ isDragging: boolean }>`
@@ -19,19 +19,18 @@ interface IDragabbleCardProps {
 }
 
 function DraggableCard({ toDoId, toDoText, index }: IDragabbleCardProps) {
+  const [{ isDragging }, drag] = useDrag({
+    type: "CARD",
+    item: { id: toDoId, index },
+    collect: (monitor: any) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
   return (
-    <Draggable draggableId={toDoId + ""} index={index}>
-      {(magic, snapshot) => (
-        <Card
-          isDragging={snapshot.isDragging}
-          ref={magic.innerRef}
-          {...magic.dragHandleProps}
-          {...magic.draggableProps}
-        >
-          {toDoText}
-        </Card>
-      )}
-    </Draggable>
+    <Card isDragging={isDragging} ref={drag}>
+      {toDoText}
+    </Card>
   );
 }
 

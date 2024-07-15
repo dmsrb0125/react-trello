@@ -87,7 +87,7 @@ const Main = () => {
 
   const handleBoardClick = (boardId: number) => {
     console.log(`Navigating to board with ID: ${boardId}`);
-    navigate(`/board/${boardId}`);
+    navigate(`/board/${boardId}`, { state: { inputValue: "board" + boardId } });
   };
 
   return (

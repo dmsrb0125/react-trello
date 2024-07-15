@@ -10,13 +10,12 @@ import BoardCreate from "./Components/BoardCreate";
 import Login from "./Components/Login";
 import BoardWrapper from "./Components/BoardWrapper";
 import { AuthProvider, useAuth } from "./AuthContext";
-import { Provider } from "react-redux";
-import store from "./store";
+import { ToDoProvider } from "./Components/ToDoContext";
 
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <AuthProvider>
+    <AuthProvider>
+      <ToDoProvider>
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -34,14 +33,21 @@ const App: React.FC = () => {
             />
           </Routes>
         </Router>
-      </AuthProvider>
-    </Provider>
+      </ToDoProvider>
+    </AuthProvider>
   );
 };
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  const { pathname } = window.location;
+
+  if (!isAuthenticated) {
+    localStorage.setItem("redirectPath", pathname);
+    return <Navigate to="/login" />;
+  }
+
+  return children;
 };
 
 export default App;

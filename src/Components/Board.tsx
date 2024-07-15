@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import styled from "styled-components";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { useRecoilState } from "recoil";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { useParams } from "react-router-dom";
-import { toDoState, IToDoState } from "../atoms";
 import Column from "./Column";
 import { TaskColumnResponseDto } from "../types";
 import axiosInstance from "../axiosConfig";
+import { ToDoContext } from "./ToDoContext";
 
 const Wrapper = styled.div`
   display: flex;
@@ -24,7 +24,7 @@ const Columns = styled.div`
 
 const Board: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
-  const [toDos, setToDos] = useRecoilState<IToDoState>(toDoState);
+  const { toDos, setToDos } = useContext(ToDoContext)!;
   const [columns, setColumns] = useState<TaskColumnResponseDto[]>([]);
 
   useEffect(() => {
@@ -40,11 +40,11 @@ const Board: React.FC = () => {
     fetchColumns();
   }, [boardId]);
 
-  const onDragEnd = (info: DropResult) => {
+  const onDragEnd = (info: any) => {
     const { destination, source } = info;
     if (!destination) return;
 
-    setToDos((allBoards) => {
+    setToDos((allBoards: any) => {
       const sourceBoard = [
         ...allBoards[source.droppableId as unknown as number],
       ];
@@ -75,22 +75,23 @@ const Board: React.FC = () => {
   }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DndProvider backend={HTML5Backend}>
       <Wrapper>
         <h2>{boardId}</h2>
         <Columns>
-          {columns.map((column) => (
+          {columns.map((column, index) => (
             <Column
               key={column.id}
               boardId={parseInt(boardId, 10)}
               columnId={column.id}
               columnName={column.columnName}
               toDos={toDos[column.id] || []}
+              index={index} // index 추가
             />
           ))}
         </Columns>
       </Wrapper>
-    </DragDropContext>
+    </DndProvider>
   );
 };
 

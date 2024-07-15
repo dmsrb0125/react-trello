@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../axiosConfig";
 import styled from "styled-components";
 import { useAuth } from "../AuthContext";
 
@@ -43,13 +42,11 @@ const Login: React.FC = () => {
   const { login, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      // 토큰이 있을 경우, 메인 페이지로 리디렉션
-      login();
-      navigate("/");
+    if (isAuthenticated) {
+      const redirectPath = localStorage.getItem("redirectPath") || "/";
+      navigate(redirectPath);
     }
-  }, [isAuthenticated, navigate, login]);
+  }, [isAuthenticated, navigate]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
@@ -62,25 +59,17 @@ const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/users/login", { username, password });
-      console.log("Login response:", response); // 응답 데이터 확인
-
-      // 응답 헤더에서 토큰 추출
-      const token = response.headers["authorization"];
-      if (token) {
-        localStorage.setItem("token", token); // Bearer 접두사 포함하여 저장
-        login(); // 인증 상태 업데이트
-        console.log(
-          "Token stored in localStorage:",
-          localStorage.getItem("token")
-        );
-        navigate("/"); // 메인 페이지로 리디렉션
+      await login(username, password);
+      const redirectPath = localStorage.getItem("redirectPath");
+      if (redirectPath) {
+        localStorage.removeItem("redirectPath");
+        navigate(redirectPath);
       } else {
-        setError("No token found in the response");
+        navigate("/");
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("Login failed. Please check your username and password."); // 에러 메시지 설정
+      setError("Login failed. Please check your username and password.");
     }
   };
 
@@ -101,7 +90,7 @@ const Login: React.FC = () => {
         />
         <Button type="submit">Login</Button>
       </Form>
-      {error && <ErrorMessage>{error}</ErrorMessage>} {/* 에러 메시지 표시 */}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
     </Wrapper>
   );
 };

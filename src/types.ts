@@ -2,10 +2,13 @@
 export interface ITodo {
   id: number;
   text: string;
-  columnId: number; // columnId 속성을 추가합니다.
+  columnId: number;
 }
 
-// src/types.ts
+export interface IToDoState {
+  [key: number]: ITodo[];
+}
+
 export interface TaskColumnResponseDto {
   id: number;
   columnName: string;
