@@ -232,6 +232,28 @@ const BoardWrapper: React.FC = () => {
     }
   };
 
+  const moveColumnLeft = (index: number) => {
+    if (index === 0) return;
+    setColumns((columns) => {
+      const newColumns = [...columns];
+      const temp = newColumns[index - 1];
+      newColumns[index - 1] = newColumns[index];
+      newColumns[index] = temp;
+      return newColumns;
+    });
+  };
+
+  const moveColumnRight = (index: number) => {
+    if (index === columns.length - 1) return;
+    setColumns((columns) => {
+      const newColumns = [...columns];
+      const temp = newColumns[index + 1];
+      newColumns[index + 1] = newColumns[index];
+      newColumns[index] = temp;
+      return newColumns;
+    });
+  };
+
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
@@ -295,6 +317,8 @@ const BoardWrapper: React.FC = () => {
                   columnName={column.columnName}
                   toDos={toDos[column.id] || []}
                   index={index}
+                  moveColumnLeft={moveColumnLeft}
+                  moveColumnRight={moveColumnRight}
                 />
               ))}
               {provided.placeholder}

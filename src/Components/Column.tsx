@@ -42,12 +42,25 @@ const Button = styled.button`
   margin-left: 5px;
 `;
 
+const MoveButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const MoveButton = styled(Button)`
+  background-color: #6c757d;
+  margin: 0 5px;
+`;
+
 interface IColumnProps {
   columnId: number;
   columnName: string;
   toDos: ITodo[];
   boardId: number;
   index: number;
+  moveColumnLeft: (index: number) => void;
+  moveColumnRight: (index: number) => void;
 }
 
 const Column = ({
@@ -56,6 +69,8 @@ const Column = ({
   toDos,
   boardId,
   index,
+  moveColumnLeft,
+  moveColumnRight,
 }: IColumnProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newColumnName, setNewColumnName] = useState(columnName);
@@ -113,6 +128,10 @@ const Column = ({
               <Button onClick={handleColumnDelete}>Delete</Button>
             </>
           )}
+          <MoveButtonContainer>
+            <MoveButton onClick={() => moveColumnLeft(index)}>←</MoveButton>
+            <MoveButton onClick={() => moveColumnRight(index)}>→</MoveButton>
+          </MoveButtonContainer>
           <AddCardForm boardId={boardId} columnId={columnId} />
           {toDos.map((toDo, index) => (
             <DraggableCard key={toDo.id} toDo={toDo} index={index} />
